@@ -14,10 +14,11 @@ const updateAdminSchema = z.object({
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const admin = await db.select().from(admins).where(eq(admins.id, params.id)).limit(1);
+        const { id } = await params;
+        const admin = await db.select().from(admins).where(eq(admins.id, id)).limit(1);
 
         if (admin.length === 0) {
             return NextResponse.json({ error: 'Admin not found' }, { status: 404 });
@@ -31,9 +32,10 @@ export async function GET(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const data = updateAdminSchema.parse(body);
 
@@ -45,7 +47,7 @@ export async function PATCH(
 
         await db.update(admins)
             .set(data)
-            .where(eq(admins.id, params.id));
+            .where(eq(admins.id, id));
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -55,10 +57,11 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        await db.delete(admins).where(eq(admins.id, params.id));
+        const { id } = await params;
+        await db.delete(admins).where(eq(admins.id, id));
 
         return NextResponse.json({ success: true });
     } catch (error) {

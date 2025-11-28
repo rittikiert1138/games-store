@@ -12,10 +12,11 @@ const updateOrderSchema = z.object({
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const order = await db.select().from(orders).where(eq(orders.id, params.id)).limit(1);
+        const { id } = await params;
+        const order = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
 
         if (order.length === 0) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
@@ -29,15 +30,16 @@ export async function GET(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const data = updateOrderSchema.parse(body);
 
         await db.update(orders)
             .set(data)
-            .where(eq(orders.id, params.id));
+            .where(eq(orders.id, id));
 
         return NextResponse.json({ success: true });
     } catch (error) {

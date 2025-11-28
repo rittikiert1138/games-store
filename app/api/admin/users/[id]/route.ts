@@ -15,10 +15,11 @@ const updateUserSchema = z.object({
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const userId = parseInt(params.id);
+        const { id } = await params;
+        const userId = parseInt(id);
         const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
         if (user.length === 0) {
@@ -33,10 +34,11 @@ export async function GET(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const userId = parseInt(params.id);
+        const { id } = await params;
+        const userId = parseInt(id);
         const body = await request.json();
         const data = updateUserSchema.parse(body);
 
@@ -58,10 +60,11 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const userId = parseInt(params.id);
+        const { id } = await params;
+        const userId = parseInt(id);
 
         await db.delete(users).where(eq(users.id, userId));
 
